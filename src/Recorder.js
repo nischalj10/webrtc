@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import RecordRTC, { RecordRTCPromisesHandler } from "recordrtc";
 import { Player } from "video-react";
 import "video-react/dist/video-react.css";
+import { S3Upload } from "./Utils";
 
 const Recorder = () => {
   const recorder = useRef(typeof RecordRTC);
@@ -10,6 +11,7 @@ const Recorder = () => {
   const screenStream = useRef(typeof MediaStream);
   const videoBlob = useRef(typeof Blob);
   const [videoUrl, setVideoUrl] = useState(typeof URL);
+  const [isUploading, setIsUploading] = useState(false);
 
   // const captureCamera = (cb) => {
   //   navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(cb);
@@ -146,6 +148,7 @@ const Recorder = () => {
     if (navigator.mediaDevices.getDisplayMedia) {
       screenStream.current = await navigator.mediaDevices.getDisplayMedia({
         video: true,
+        audio: false,
       });
     } else {
       screenStream.current = await navigator.getDisplayMedia({ video: true });
@@ -195,9 +198,28 @@ const Recorder = () => {
     screenStream.current.stop();
     // console.log("videoBlob", videoBlob.current);
     setVideoUrl(window.URL.createObjectURL(videoBlob.current));
+    let params = {
+      type: "video/webm",
+      data: videoBlob.current,
+      id: Math.floor(Math.random() * 90000) + 10000,
+    };
     cameraStream.current = null;
     screenStream.current = null;
     recorder.current = null;
+    setIsUploading(true);
+    S3Upload(params).then(
+      (success) => {
+        console.log("Uploaded to S3", success);
+        if (success) {
+          console.log(success);
+          setIsUploading(false);
+        }
+      },
+      (error) => {
+        alert(error, "error occurred. check your aws settings and try again.");
+        setIsUploading(false);
+      }
+    );
   };
 
   return (
@@ -205,8 +227,9 @@ const Recorder = () => {
       <div>
         <button onClick={startRecorder}>Record</button>
         <button onClick={stopRecorder}>Stop</button>
-        {<Player src={videoUrl} />}
       </div>
+      {<Player src={videoUrl} />}
+      <div>{isUploading && <h1>Uploading...</h1>}</div>
     </div>
   );
 };
