@@ -8,7 +8,10 @@
     "@testing-library/user-event": "^13.5.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-media-recorder": "^1.6.3",
     "react-scripts": "5.0.0",
+    "recordrtc": "^5.6.2",
+    "video-react": "^0.15.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
