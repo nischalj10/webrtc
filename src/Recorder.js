@@ -141,6 +141,7 @@ const Recorder = () => {
     cameraStream.current = await mediaDevices.getUserMedia({
       video: true,
       audio: true,
+      audio: { echoCancellation: true, noiseSuppression: true },
     });
     console.log("cameraStream", cameraStream.current);
 
@@ -185,6 +186,10 @@ const Recorder = () => {
       {
         type: "video",
         mimeType: "video/webm",
+        sampleRate: 4096,
+        bufferSize: 512,
+        numberOfAudioChannels: 2,
+        frameRate: 30,
       }
     );
     await recorder.current.startRecording();
